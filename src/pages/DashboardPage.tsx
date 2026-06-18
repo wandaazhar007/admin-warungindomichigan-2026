@@ -89,7 +89,7 @@ export default function DashboardPage() {
         <StatCard
           icon={AlertTriangle}
           label="Stok Menipis"
-          value={stats?.lowStockCount ?? 0}
+          value={stats?.lowStockProducts ?? 0}
           sub="Di bawah minStok"
           color="bg-orange-500"
         />
@@ -150,7 +150,7 @@ export default function DashboardPage() {
                 {stats.topProducts.map((p, i) => (
                   <tr key={i}>
                     <td className="py-3 text-gray-900 pr-4">{p.productName}</td>
-                    <td className="py-3 text-right text-gray-600">{p.qty}</td>
+                    <td className="py-3 text-right text-gray-600">{p.quantity}</td>
                     <td className="py-3 text-right font-medium text-gray-900">
                       {formatPrice(p.revenue)}
                     </td>
