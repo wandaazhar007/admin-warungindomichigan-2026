@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Loader2, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,6 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Debounce search
   let debounceTimer: ReturnType<typeof setTimeout>;
   function handleSearch(v: string) {
     setSearch(v);
@@ -42,12 +41,14 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display font-700 text-2xl text-gray-900">Produk</h1>
-        <Button asChild>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-display font-semibold text-xl sm:text-2xl text-gray-900">Produk</h1>
+        <Button asChild size="sm" className="sm:size-auto">
           <Link to="/products/new">
-            <Plus className="h-4 w-4 mr-2" /> Tambah Produk
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Tambah Produk</span>
           </Link>
         </Button>
       </div>
@@ -63,8 +64,8 @@ export default function ProductsPage() {
         />
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden sm:block bg-white rounded-xl border border-gray-100 overflow-hidden">
         {isLoading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -79,7 +80,7 @@ export default function ProductsPage() {
                   <th className="text-right px-4 py-3 text-gray-500 font-medium">Harga</th>
                   <th className="text-right px-4 py-3 text-gray-500 font-medium">Stok</th>
                   <th className="text-center px-4 py-3 text-gray-500 font-medium">Status</th>
-                  <th className="px-4 py-3" />
+                  <th className="px-4 py-3 w-20" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -90,11 +91,11 @@ export default function ProductsPage() {
                         <div className="h-10 w-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0 overflow-hidden">
                           {product.images[0]
                             ? <img src={product.images[0].url} alt="" className="h-10 w-10 object-cover" />
-                            : <span className="text-lg">📦</span>
+                            : <Package className="h-5 w-5 text-red-300" />
                           }
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900 line-clamp-1">{product.name}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900 truncate max-w-[200px]">{product.name}</p>
                           <p className="text-xs text-gray-400">{product.sku ?? product.slug}</p>
                         </div>
                       </div>
@@ -114,7 +115,7 @@ export default function ProductsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
                         {product.isActive
                           ? <Badge variant="success">Aktif</Badge>
                           : <Badge variant="secondary">Nonaktif</Badge>
@@ -153,32 +154,84 @@ export default function ProductsPage() {
           </div>
         )}
 
-        {/* Pagination */}
         {data && data.meta.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <p className="text-sm text-gray-500">
-              {data.meta.total} produk total
-            </p>
+            <p className="text-sm text-gray-500">{data.meta.total} produk</p>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline" size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                ← Sebelumnya
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                ←
               </Button>
-              <span className="text-sm text-gray-500">
-                {page} / {data.meta.totalPages}
-              </span>
-              <Button
-                variant="outline" size="sm"
-                disabled={page >= data.meta.totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Berikutnya →
+              <span className="text-sm text-gray-500">{page} / {data.meta.totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= data.meta.totalPages} onClick={() => setPage((p) => p + 1)}>
+                →
               </Button>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Mobile card list */}
+      <div className="sm:hidden space-y-2">
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+          </div>
+        ) : (
+          <>
+            {data?.data.map((product) => (
+              <div key={product.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-3">
+                <div className="h-12 w-12 rounded-lg bg-red-50 flex items-center justify-center shrink-0 overflow-hidden">
+                  {product.images[0]
+                    ? <img src={product.images[0].url} alt="" className="h-12 w-12 object-cover" />
+                    : <Package className="h-5 w-5 text-red-300" />
+                  }
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 truncate text-sm">{product.name}</p>
+                  <p className="text-xs text-gray-400">{product.category.name}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-sm font-medium text-gray-900">{formatPrice(product.price)}</span>
+                    <span className={`text-xs ${product.stock <= product.minStock ? 'text-orange-600 font-medium' : 'text-gray-400'}`}>
+                      stok: {product.stock}
+                    </span>
+                    {product.isActive
+                      ? <Badge variant="success" className="text-[10px] py-0">Aktif</Badge>
+                      : <Badge variant="secondary" className="text-[10px] py-0">Nonaktif</Badge>
+                    }
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 shrink-0">
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link to={`/products/${product.id}/edit`}>
+                      <Pencil className="h-4 w-4 text-gray-500" />
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => confirmDelete(product)}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-400" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+            {data?.data.length === 0 && (
+              <div className="text-center py-12 text-gray-400 text-sm">Tidak ada produk ditemukan.</div>
+            )}
+            {data && data.meta.totalPages > 1 && (
+              <div className="flex items-center justify-between pt-2">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                  ← Sebelumnya
+                </Button>
+                <span className="text-sm text-gray-500">{page} / {data.meta.totalPages}</span>
+                <Button variant="outline" size="sm" disabled={page >= data.meta.totalPages} onClick={() => setPage((p) => p + 1)}>
+                  Berikutnya →
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Package, Tag, ShoppingBag, LogOut,
+  LayoutDashboard, Package, Tag, ShoppingBag, LogOut, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { signOutAdmin } from '@/lib/auth';
@@ -13,7 +13,12 @@ const NAV = [
   { to: '/orders',     icon: ShoppingBag,     label: 'Pesanan'    },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const user = useAuthStore((s) => s.user);
 
   async function handleSignOut() {
@@ -21,13 +26,29 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-60 bg-white border-r border-gray-200 flex flex-col z-30">
+    <aside
+      className={cn(
+        'fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col z-50 transition-transform duration-300 ease-in-out',
+        'lg:translate-x-0 lg:w-60',
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      )}
+    >
       {/* Logo */}
-      <div className="px-5 py-4 border-b border-gray-100">
-        <p className="font-display font-700 text-gray-900 text-sm leading-tight">
-          Warung Indo Michigan
-        </p>
-        <p className="text-xs text-red-500 font-medium mt-0.5">Admin Panel</p>
+      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <p className="font-display font-semibold text-gray-900 text-sm leading-tight">
+            Warung Indo Michigan
+          </p>
+          <p className="text-xs text-red-500 font-medium mt-0.5">Admin Panel</p>
+        </div>
+        {/* Close button — mobile only */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          aria-label="Tutup menu"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Nav */}
@@ -37,6 +58,7 @@ export default function Sidebar() {
             key={to}
             to={to}
             end={to === '/'}
+            onClick={onClose}
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',

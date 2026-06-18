@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Upload, X, Star } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, X, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -35,7 +35,7 @@ interface ImageItem {
   altText: string;
   isPrimary: boolean;
   sortOrder: number;
-  id?: string; // existing image
+  id?: string;
   uploading?: boolean;
 }
 
@@ -46,7 +46,7 @@ export default function ProductFormPage() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [images, setImages] = useState<ImageItem[]>([]);
+  const [images, setImages]           = useState<ImageItem[]>([]);
   const [uploadingAny, setUploadingAny] = useState(false);
   const [serverError, setServerError] = useState('');
 
@@ -68,12 +68,10 @@ export default function ProductFormPage() {
 
   const nameValue = watch('name');
 
-  // Auto-generate slug from name (only for new product)
   useEffect(() => {
     if (!isEdit && nameValue) setValue('slug', slugify(nameValue));
   }, [nameValue, isEdit, setValue]);
 
-  // Prefill form for edit mode
   useEffect(() => {
     if (!product) return;
     setValue('name',         product.name);
@@ -115,10 +113,9 @@ export default function ProductFormPage() {
           sortOrder: idx,
         })),
       };
-      if (isEdit) {
-        return api.put(`/admin/products/${id}`, payload);
-      }
-      return api.post('/admin/products', payload);
+      return isEdit
+        ? api.put(`/admin/products/${id}`, payload)
+        : api.post('/admin/products', payload);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-products'] });
@@ -137,9 +134,7 @@ export default function ProductFormPage() {
     setUploadingAny(true);
     try {
       for (const file of files) {
-        const placeholder: ImageItem = {
-          url: '', altText: '', isPrimary: false, sortOrder: images.length, uploading: true,
-        };
+        const placeholder: ImageItem = { url: '', altText: '', isPrimary: false, sortOrder: images.length, uploading: true };
         setImages((prev) => [...prev, placeholder]);
         const url = await uploadToCloudinary(file);
         setImages((prev) => {
@@ -168,32 +163,40 @@ export default function ProductFormPage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <h1 className="font-display font-700 text-2xl text-gray-900">
-        {isEdit ? 'Edit Produk' : 'Tambah Produk Baru'}
-      </h1>
+    <div className="max-w-3xl space-y-5">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => navigate('/products')}
+          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <h1 className="font-display font-semibold text-xl sm:text-2xl text-gray-900">
+          {isEdit ? 'Edit Produk' : 'Tambah Produk Baru'}
+        </h1>
+      </div>
 
-      <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-6">
+      <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-5">
         {/* Basic info */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-          <h2 className="font-600 text-gray-900">Informasi Dasar</h2>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+        <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 space-y-4">
+          <h2 className="font-semibold text-gray-900 text-sm sm:text-base">Informasi Dasar</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Nama Produk *</label>
               <Input placeholder="Indomie Goreng Original" {...register('name')} />
-              {errors.name && <p className="text-xs text-error mt-1">{errors.name.message}</p>}
+              {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Slug *</label>
               <Input placeholder="indomie-goreng-original" {...register('slug')} />
-              {errors.slug && <p className="text-xs text-error mt-1">{errors.slug.message}</p>}
+              {errors.slug && <p className="text-xs text-red-500 mt-1">{errors.slug.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">SKU</label>
               <Input placeholder="IMI-001" {...register('sku')} />
             </div>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Deskripsi</label>
               <textarea
                 {...register('description')}
@@ -206,45 +209,45 @@ export default function ProductFormPage() {
         </div>
 
         {/* Pricing & inventory */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-          <h2 className="font-600 text-gray-900">Harga & Stok</h2>
+        <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 space-y-4">
+          <h2 className="font-semibold text-gray-900 text-sm sm:text-base">Harga & Stok</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Harga Jual (USD) *</label>
               <Input type="number" step="0.01" min="0" placeholder="3.99" {...register('price')} />
-              {errors.price && <p className="text-xs text-error mt-1">{errors.price.message}</p>}
+              {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price.message}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Harga Coret (USD)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Harga Coret</label>
               <Input type="number" step="0.01" min="0" placeholder="4.99" {...register('comparePrice')} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Satuan *</label>
-              <Input placeholder="pcs / pack / kg / botol" {...register('unit')} />
-              {errors.unit && <p className="text-xs text-error mt-1">{errors.unit.message}</p>}
+              <Input placeholder="pcs / pack / kg" {...register('unit')} />
+              {errors.unit && <p className="text-xs text-red-500 mt-1">{errors.unit.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Berat (gram) *</label>
               <Input type="number" min="1" placeholder="400" {...register('weightGrams')} />
-              {errors.weightGrams && <p className="text-xs text-error mt-1">{errors.weightGrams.message}</p>}
+              {errors.weightGrams && <p className="text-xs text-red-500 mt-1">{errors.weightGrams.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Stok *</label>
               <Input type="number" min="0" placeholder="100" {...register('stock')} />
-              {errors.stock && <p className="text-xs text-error mt-1">{errors.stock.message}</p>}
+              {errors.stock && <p className="text-xs text-red-500 mt-1">{errors.stock.message}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Min Stok (alert) *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Min Stok *</label>
               <Input type="number" min="0" placeholder="5" {...register('minStock')} />
-              {errors.minStock && <p className="text-xs text-error mt-1">{errors.minStock.message}</p>}
+              {errors.minStock && <p className="text-xs text-red-500 mt-1">{errors.minStock.message}</p>}
             </div>
           </div>
         </div>
 
         {/* Category & tags */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-          <h2 className="font-600 text-gray-900">Kategori & Tags</h2>
-          <div className="grid grid-cols-2 gap-4">
+        <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 space-y-4">
+          <h2 className="font-semibold text-gray-900 text-sm sm:text-base">Kategori & Tags</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategori *</label>
               <Select {...register('categoryId')}>
@@ -253,7 +256,7 @@ export default function ProductFormPage() {
                   <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                 ))}
               </Select>
-              {errors.categoryId && <p className="text-xs text-error mt-1">{errors.categoryId.message}</p>}
+              {errors.categoryId && <p className="text-xs text-red-500 mt-1">{errors.categoryId.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Tags (pisah koma)</label>
@@ -266,20 +269,22 @@ export default function ProductFormPage() {
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" {...register('isFeatured')} className="accent-red-500" />
-                <span className="text-sm text-gray-700">Produk Unggulan</span>
+                <span className="text-sm text-gray-700">Unggulan</span>
               </label>
             </div>
           </div>
         </div>
 
         {/* Images */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-          <h2 className="font-600 text-gray-900">Foto Produk</h2>
-          <p className="text-sm text-gray-500">
-            Gambar pertama otomatis jadi foto utama. Klik ⭐ untuk ganti foto utama.
-          </p>
+        <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 space-y-4">
+          <div>
+            <h2 className="font-semibold text-gray-900 text-sm sm:text-base">Foto Produk</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Foto pertama otomatis jadi foto utama. Tap ⭐ untuk ganti foto utama.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
             {images.map((img, idx) => (
               <div key={idx} className="relative group aspect-square">
                 {img.uploading ? (
@@ -294,16 +299,17 @@ export default function ProductFormPage() {
                       className="h-full w-full object-cover rounded-lg border border-gray-200"
                     />
                     {idx === 0 && (
-                      <span className="absolute top-1.5 left-1.5 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded">
+                      <span className="absolute top-1 left-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded">
                         Utama
                       </span>
                     )}
-                    <div className="absolute inset-0 bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    {/* Touch-friendly buttons always visible on mobile */}
+                    <div className="absolute inset-0 bg-black/40 rounded-lg sm:opacity-0 sm:group-hover:opacity-100 opacity-100 transition-opacity flex items-center justify-center gap-1.5">
                       {idx !== 0 && (
                         <button
                           type="button"
                           onClick={() => setPrimary(idx)}
-                          className="p-1.5 bg-white rounded-full"
+                          className="p-1.5 bg-white rounded-full shadow"
                           title="Jadikan foto utama"
                         >
                           <Star className="h-3.5 w-3.5 text-yellow-500" />
@@ -312,7 +318,7 @@ export default function ProductFormPage() {
                       <button
                         type="button"
                         onClick={() => removeImage(idx)}
-                        className="p-1.5 bg-white rounded-full"
+                        className="p-1.5 bg-white rounded-full shadow"
                         title="Hapus foto"
                       >
                         <X className="h-3.5 w-3.5 text-red-500" />
@@ -323,15 +329,14 @@ export default function ProductFormPage() {
               </div>
             ))}
 
-            {/* Upload button */}
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploadingAny}
-              className="aspect-square rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1.5 hover:border-red-400 transition-colors disabled:opacity-50"
+              className="aspect-square rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 hover:border-red-400 transition-colors disabled:opacity-50 active:bg-gray-50"
             >
-              <Upload className="h-5 w-5 text-gray-400" />
-              <span className="text-xs text-gray-400">Upload</span>
+              <Upload className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+              <span className="text-[10px] sm:text-xs text-gray-400">Upload</span>
             </button>
           </div>
 
@@ -351,7 +356,7 @@ export default function ProductFormPage() {
           </div>
         )}
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 pb-4">
           <Button type="button" variant="outline" onClick={() => navigate('/products')}>
             Batal
           </Button>

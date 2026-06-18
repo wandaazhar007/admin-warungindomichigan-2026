@@ -55,45 +55,58 @@ export default function OrdersPage() {
       }).then((r) => r.data),
   });
 
+  const Pagination = () => data && data.meta.totalPages > 1 ? (
+    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+      <p className="text-sm text-gray-500">{data.meta.total} pesanan</p>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>←</Button>
+        <span className="text-sm text-gray-500">{page} / {data.meta.totalPages}</span>
+        <Button variant="outline" size="sm" disabled={page >= data.meta.totalPages} onClick={() => setPage((p) => p + 1)}>→</Button>
+      </div>
+    </div>
+  ) : null;
+
   return (
-    <div className="space-y-6">
-      <h1 className="font-display font-700 text-2xl text-gray-900">Pesanan</h1>
+    <div className="space-y-5">
+      <h1 className="font-display font-semibold text-xl sm:text-2xl text-gray-900">Pesanan</h1>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <div className="relative">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <div className="relative flex-1 sm:flex-none sm:w-56">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Cari nomor / email…"
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
-            className="pl-9 w-56"
+            className="pl-9 w-full"
           />
         </div>
-        <Select
-          value={statusFilter}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="w-44"
-        >
-          <option value="">Semua Status</option>
-          {(Object.keys(ORDER_STATUS_LABELS) as OrderStatus[]).map((s) => (
-            <option key={s} value={s}>{ORDER_STATUS_LABELS[s]}</option>
-          ))}
-        </Select>
-        <Select
-          value={paymentFilter}
-          onChange={(e) => { setPayment(e.target.value); setPage(1); }}
-          className="w-44"
-        >
-          <option value="">Semua Pembayaran</option>
-          {(Object.keys(PAYMENT_STATUS_LABELS) as PaymentStatus[]).map((s) => (
-            <option key={s} value={s}>{PAYMENT_STATUS_LABELS[s]}</option>
-          ))}
-        </Select>
+        <div className="flex gap-2">
+          <Select
+            value={statusFilter}
+            onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+            className="flex-1 sm:w-40"
+          >
+            <option value="">Semua Status</option>
+            {(Object.keys(ORDER_STATUS_LABELS) as OrderStatus[]).map((s) => (
+              <option key={s} value={s}>{ORDER_STATUS_LABELS[s]}</option>
+            ))}
+          </Select>
+          <Select
+            value={paymentFilter}
+            onChange={(e) => { setPayment(e.target.value); setPage(1); }}
+            className="flex-1 sm:w-40"
+          >
+            <option value="">Semua Bayar</option>
+            {(Object.keys(PAYMENT_STATUS_LABELS) as PaymentStatus[]).map((s) => (
+              <option key={s} value={s}>{PAYMENT_STATUS_LABELS[s]}</option>
+            ))}
+          </Select>
+        </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden sm:block bg-white rounded-xl border border-gray-100 overflow-hidden">
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div>
         ) : (
@@ -107,7 +120,7 @@ export default function OrdersPage() {
                   <th className="text-center px-4 py-3 text-gray-500 font-medium">Status</th>
                   <th className="text-center px-4 py-3 text-gray-500 font-medium">Pembayaran</th>
                   <th className="text-right px-4 py-3 text-gray-500 font-medium">Total</th>
-                  <th className="px-4 py-3" />
+                  <th className="px-4 py-3 w-10" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -115,17 +128,13 @@ export default function OrdersPage() {
                   <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-900">{order.orderNumber}</p>
-                      {order.isGuestOrder && (
-                        <span className="text-xs text-gray-400">Guest</span>
-                      )}
+                      {order.isGuestOrder && <span className="text-xs text-gray-400">Guest</span>}
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-gray-800">{order.email}</p>
-                      <p className="text-xs text-gray-400">
-                        {order.shipFirstName} {order.shipLastName}
-                      </p>
+                      <p className="text-gray-800 truncate max-w-[160px]">{order.email}</p>
+                      <p className="text-xs text-gray-400">{order.shipFirstName} {order.shipLastName}</p>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                       {formatDateTime(order.createdAt)}
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -138,14 +147,11 @@ export default function OrdersPage() {
                         {PAYMENT_STATUS_LABELS[order.paymentStatus]}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-gray-900">
+                    <td className="px-4 py-3 text-right font-medium text-gray-900 whitespace-nowrap">
                       {formatPrice(parseFloat(order.total))}
                     </td>
                     <td className="px-4 py-3">
-                      <Link
-                        to={`/orders/${order.orderNumber}`}
-                        className="flex items-center justify-center"
-                      >
+                      <Link to={`/orders/${order.orderNumber}`} className="flex items-center justify-center">
                         <ChevronRight className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
                       </Link>
                     </td>
@@ -162,20 +168,55 @@ export default function OrdersPage() {
             </table>
           </div>
         )}
+        <Pagination />
+      </div>
 
-        {data && data.meta.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <p className="text-sm text-gray-500">{data.meta.total} pesanan total</p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                ← Sebelumnya
-              </Button>
-              <span className="text-sm text-gray-500">{page} / {data.meta.totalPages}</span>
-              <Button variant="outline" size="sm" disabled={page >= data.meta.totalPages} onClick={() => setPage((p) => p + 1)}>
-                Berikutnya →
-              </Button>
-            </div>
+      {/* Mobile card list */}
+      <div className="sm:hidden space-y-2">
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
           </div>
+        ) : (
+          <>
+            {(data?.data as Order[]).map((order) => (
+              <Link
+                key={order.id}
+                to={`/orders/${order.orderNumber}`}
+                className="block bg-white rounded-xl border border-gray-100 p-4 hover:border-red-200 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 text-sm">{order.orderNumber}</p>
+                    <p className="text-xs text-gray-500 truncate">{order.email}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(order.createdAt)}</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-300 shrink-0 mt-1" />
+                </div>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <Badge variant={orderStatusVariant(order.status)} className="text-[10px]">
+                    {ORDER_STATUS_LABELS[order.status]}
+                  </Badge>
+                  <Badge variant={order.paymentStatus === 'PAID' ? 'success' : order.paymentStatus === 'FAILED' ? 'destructive' : 'warning'} className="text-[10px]">
+                    {PAYMENT_STATUS_LABELS[order.paymentStatus]}
+                  </Badge>
+                  <span className="text-sm font-medium text-gray-900 ml-auto">
+                    {formatPrice(parseFloat(order.total))}
+                  </span>
+                </div>
+              </Link>
+            ))}
+            {data?.data.length === 0 && (
+              <div className="text-center py-12 text-gray-400 text-sm">Tidak ada pesanan ditemukan.</div>
+            )}
+            {data && data.meta.totalPages > 1 && (
+              <div className="flex items-center justify-between pt-2">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>← Sebelumnya</Button>
+                <span className="text-sm text-gray-500">{page} / {data.meta.totalPages}</span>
+                <Button variant="outline" size="sm" disabled={page >= data.meta.totalPages} onClick={() => setPage((p) => p + 1)}>Berikutnya →</Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

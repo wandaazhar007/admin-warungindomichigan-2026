@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Pencil, Trash2, X, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { slugify } from '@/lib/utils';
@@ -21,10 +21,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 function CategoryForm({
-  initial,
-  onSave,
-  onCancel,
-  isPending,
+  initial, onSave, onCancel, isPending,
 }: {
   initial?: Category;
   onSave: (data: FormValues) => void;
@@ -40,22 +37,21 @@ function CategoryForm({
     });
 
   const nameValue = watch('name');
-  // Auto slug only for new
   if (!initial && nameValue) setValue('slug', slugify(nameValue));
 
   return (
-    <form onSubmit={handleSubmit(onSave)} className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-      <h3 className="font-600 text-gray-900">{initial ? 'Edit Kategori' : 'Tambah Kategori Baru'}</h3>
-      <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit(onSave)} className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 space-y-4">
+      <h3 className="font-semibold text-gray-900">{initial ? 'Edit Kategori' : 'Tambah Kategori Baru'}</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Nama *</label>
           <Input placeholder="Mie & Bubur" {...register('name')} />
-          {errors.name && <p className="text-xs text-error mt-1">{errors.name.message}</p>}
+          {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Slug *</label>
           <Input placeholder="mie-bubur" {...register('slug')} />
-          {errors.slug && <p className="text-xs text-error mt-1">{errors.slug.message}</p>}
+          {errors.slug && <p className="text-xs text-red-500 mt-1">{errors.slug.message}</p>}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Icon (emoji)</label>
@@ -65,7 +61,7 @@ function CategoryForm({
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Urutan Tampil</label>
           <Input type="number" min="0" placeholder="0" {...register('sortOrder')} />
         </div>
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Deskripsi</label>
           <Input placeholder="Deskripsi singkat kategori…" {...register('description')} />
         </div>
@@ -74,7 +70,7 @@ function CategoryForm({
           <label htmlFor="cat-active" className="text-sm text-gray-700 cursor-pointer">Aktif</label>
         </div>
       </div>
-      <div className="flex gap-3">
+      <div className="flex gap-3 pt-1">
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>Batal</Button>
         <Button type="submit" size="sm" disabled={isPending}>
           {isPending ? <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Menyimpan…</> : 'Simpan'}
@@ -114,12 +110,13 @@ export default function CategoriesPage() {
   });
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-3xl space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="font-display font-700 text-2xl text-gray-900">Kategori</h1>
+        <h1 className="font-display font-semibold text-xl sm:text-2xl text-gray-900">Kategori</h1>
         {!showForm && !editing && (
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-2" /> Tambah Kategori
+          <Button onClick={() => setShowForm(true)} size="sm" className="sm:size-auto">
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Tambah Kategori</span>
           </Button>
         )}
       </div>
@@ -133,7 +130,9 @@ export default function CategoriesPage() {
       )}
 
       {isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-gray-400" /></div>
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </div>
       ) : (
         <div className="space-y-2">
           {categories?.map((cat) =>
@@ -146,20 +145,20 @@ export default function CategoriesPage() {
                 isPending={updateMutation.isPending}
               />
             ) : (
-              <div key={cat.id} className="flex items-center gap-4 bg-white rounded-xl border border-gray-100 p-4">
+              <div key={cat.id} className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 p-3 sm:p-4">
                 <span className="text-2xl shrink-0">{cat.icon ?? '📦'}</span>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{cat.name}</p>
-                  <p className="text-xs text-gray-400">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 text-sm">{cat.name}</p>
+                  <p className="text-xs text-gray-400 truncate">
                     {cat.slug} · {cat._count?.products ?? 0} produk
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 shrink-0">
                   {cat.isActive
-                    ? <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded-full">Aktif</span>
-                    : <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">Nonaktif</span>
+                    ? <span className="hidden sm:inline text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded-full">Aktif</span>
+                    : <span className="hidden sm:inline text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">Nonaktif</span>
                   }
-                  <Button variant="ghost" size="icon" onClick={() => setEditing(cat)}>
+                  <Button variant="ghost" size="icon" onClick={() => { setEditing(cat); setShowForm(false); }}>
                     <Pencil className="h-4 w-4 text-gray-500" />
                   </Button>
                   <Button
@@ -175,6 +174,9 @@ export default function CategoriesPage() {
                 </div>
               </div>
             )
+          )}
+          {categories?.length === 0 && (
+            <p className="text-center text-gray-400 text-sm py-8">Belum ada kategori.</p>
           )}
         </div>
       )}
