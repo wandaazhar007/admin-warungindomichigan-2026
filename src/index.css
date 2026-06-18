@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary:        #E86363;
+    --primary-hover:  #D14F4F;
+    --sidebar-w:      240px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+  .font-600 { font-weight: 600; }
+  .font-700 { font-weight: 700; }
+  .sidebar-w { width: var(--sidebar-w); }
+}
