@@ -37,7 +37,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
         <div>
           <p className="font-display font-semibold text-gray-900 text-sm leading-tight">
-            Warung Indo Michigan
+            Warung IndoMi
           </p>
           <p className="text-xs text-red-500 font-medium mt-0.5">Admin Panel</p>
         </div>

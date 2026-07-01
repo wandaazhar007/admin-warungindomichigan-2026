@@ -66,7 +66,7 @@ export default function LoginPage() {
             />
           </div>
           <h1 className="font-display font-semibold text-2xl text-gray-900">Admin Login</h1>
-          <p className="text-gray-500 text-sm mt-1">Warung Indo Michigan</p>
+          <p className="text-gray-500 text-sm mt-1">Warung IndoMi</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
@@ -121,7 +121,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Hanya untuk admin Warung Indo Michigan
+          Hanya untuk admin Warung IndoMi
         </p>
       </div>
     </div>

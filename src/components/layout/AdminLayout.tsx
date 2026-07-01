@@ -18,7 +18,7 @@ export default function AdminLayout() {
           <Menu className="h-5 w-5" />
         </button>
         <div>
-          <p className="font-display font-semibold text-gray-900 text-sm leading-tight">Warung Indo Michigan</p>
+          <p className="font-display font-semibold text-gray-900 text-sm leading-tight">Warung IndoMi</p>
           <p className="text-xs text-red-500 font-medium leading-none">Admin Panel</p>
         </div>
       </header>
